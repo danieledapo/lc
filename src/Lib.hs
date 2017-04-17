@@ -1,9 +1,15 @@
 module Lib
-  ( someFunc
+  ( AST(..)
+  , lam
   ) where
 
 lam :: Char
-lam = '\955' -- aka \03BB
+lam = '\955' -- aka 0x03BB
 
-someFunc :: IO ()
-someFunc = putStrLn [lam]
+data AST
+  = Var String
+  | Abs String
+        AST
+  | App AST
+        AST
+  deriving (Show, Eq)

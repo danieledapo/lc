@@ -1,6 +1,8 @@
 module Main where
 
-import Lib
+import Parser
 
 main :: IO ()
-main = someFunc
+main = mapM_ (\l -> putStr l >> putStr " -> " >> parseTest line l) input
+  where
+    input = ["x", "λx.x", "x y", "(λx y.x) a b"]
