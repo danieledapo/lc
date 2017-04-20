@@ -22,7 +22,9 @@ data AST
 instance Pretty AST where
   pPrint (Var v) = text v
   pPrint (Abs arg body) = char lam <> text arg <> char '.' <> pPrint body
-  pPrint (App fn arg) = maybeParens (not $ isVar fn) (pPrint fn) <+> pPrint arg
+  pPrint (App fn arg) =
+    let parensIfNotVar p = maybeParens (not $ isVar p) (pPrint p)
+    in parensIfNotVar fn <+> parensIfNotVar arg
 
 isVar :: AST -> Bool
 isVar (Var _) = True
