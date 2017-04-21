@@ -50,6 +50,9 @@ expr = do
   where
     term = parens expr <|> abstraction <|> var
 
+var :: Parser AST
+var = Var <$> iden
+
 abstraction :: Parser AST
 abstraction = do
   void $ symbol [lam]
@@ -57,10 +60,7 @@ abstraction = do
   void $ symbol "."
   body <- expr
   -- desugar multiple arguments to nested abstractions
-  -- the trick is to set isLast to True only in the initial
-  -- accumulator and then always to False, so that when it's
-  -- True the body is the initial body otherwise is the chain
-  -- of nested abstractions
+  -- example: λx y z.x -> Abs "x" (Abs "y" (Abs "z" (Var "x")))
   let foldAbs arg (acc, isLast) =
         ( Abs
             arg
@@ -70,6 +70,3 @@ abstraction = do
         , False)
   let explodeAbs = fst $ foldr foldAbs (undefined, True) args
   return explodeAbs
-
-var :: Parser AST
-var = Var <$> iden

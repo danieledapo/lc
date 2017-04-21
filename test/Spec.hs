@@ -5,12 +5,11 @@ import Test.QuickCheck
 
 instance Arbitrary AST where
   arbitrary = do
-    n <- choose (0, 2) :: Gen Integer
+    n <- elements [0..2]
     case n of
       0 -> fmap Var string
       1 -> Abs <$> string <*> arbitrary
       2 -> App <$> arbitrary <*> arbitrary
-      _ -> error "should be impossible"
 
 string :: Gen String
 string = listOf1 char

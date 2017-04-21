@@ -13,4 +13,4 @@ main = mapM_ go input
       putStr . show $ a
       putStr " -> "
       putStrLn . render . pPrint $ a
-    input = ["x", "λx.x", "x y", "(λx y.x) a b"]
+    input = ["x", "λx.x", "x y", "λx y.x", "(λx y.x) a b"]
