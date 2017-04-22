@@ -1,3 +1,6 @@
+-- | Parse the canonical syntax of lambda calculus
+-- additional syntax is planned(like assignement), but not
+-- yet implemented
 module Parser
   ( expr
   , line
@@ -35,15 +38,19 @@ iden :: Parser String
 iden = lexeme $ some alphaNumChar
 
 -- Main parser
+-- | parse an entire program, that is multiple `line`
 program :: Parser [AST]
 program = many line <* eof
 
+-- | parse a single line, that is an `expr` preceded by spaces
 line :: Parser AST
 line = space >> expr
 
+-- | parse a lambda expression consuming any following spaces
 expr :: Parser AST
 expr = do
   terms <- some term
+
   -- collect all terms in the expression and bundle them in applications
   -- example: x y z -> [Var "x", Var "y", Var "z"] -> App (App (Var "x") (Var "y")) (Var "z")
   return $ foldl1 App terms
@@ -59,6 +66,7 @@ abstraction = do
   args <- some iden
   void $ symbol "."
   body <- expr
+
   -- desugar multiple arguments to nested abstractions
   -- example: λx y z.x -> Abs "x" (Abs "y" (Abs "z" (Var "x")))
   let foldAbs arg (acc, isLast) =
