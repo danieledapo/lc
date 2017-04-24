@@ -16,7 +16,7 @@ import Text.Megaparsec hiding (space)
 import qualified Text.Megaparsec.Lexer as L
 import Text.Megaparsec.String
 
-import Lib (AST(..), lam)
+import Lib
 
 -- Plumbing
 -- consume any whitespace-like things(i.e. comments)
@@ -39,28 +39,28 @@ iden = lexeme $ some alphaNumChar
 
 -- Main parser
 -- | parse an entire program, that is multiple `line`
-program :: Parser [AST]
+program :: Parser [Lc]
 program = many line <* eof
 
 -- | parse a single line, that is an `expr` preceded by spaces
-line :: Parser AST
+line :: Parser Lc
 line = space >> expr
 
 -- | parse a lambda expression consuming any following spaces
-expr :: Parser AST
+expr :: Parser Lc
 expr = do
   terms <- some term
 
   -- collect all terms in the expression and bundle them in applications
   -- example: x y z -> [Var "x", Var "y", Var "z"] -> App (App (Var "x") (Var "y")) (Var "z")
-  return $ foldl1 App terms
+  return $ foldl1 (\acc x -> LcApp (App acc x)) terms
   where
     term = parens expr <|> abstraction <|> var
 
-var :: Parser AST
-var = Var <$> iden
+var :: Parser Lc
+var = fmap (LcVar . Var) iden
 
-abstraction :: Parser AST
+abstraction :: Parser Lc
 abstraction = do
   void $ symbol [lam]
   args <- some iden
@@ -70,7 +70,7 @@ abstraction = do
   -- desugar multiple arguments to nested abstractions
   -- example: λx y z.x -> Abs "x" (Abs "y" (Abs "z" (Var "x")))
   let foldAbs arg (acc, isLast) =
-        ( Abs
+        ( LcAbs $ Abs
             arg
             (if isLast
                then body

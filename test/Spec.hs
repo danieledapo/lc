@@ -5,20 +5,22 @@ import Parser
 
 import Test.QuickCheck
 
-instance Arbitrary AST where
-  arbitrary = sized $ arbitraryAST (Set.fromList ["x", "y", "someglobals"]) -- need some globals otherwise a single Var wouldn't work
+instance Arbitrary Lc where
+  arbitrary = sized $ arbitraryLc (Set.fromList ["x", "y", "someglobals"]) -- need some globals otherwise a single Var wouldn't work
 
-arbitraryAST :: Set.Set String -> Int -> Gen AST
-arbitraryAST vars 0 = Var <$> elements (Set.toList vars)
-arbitraryAST vars size = oneof [arbitraryAbs, arbitraryApp]
+arbitraryLc :: Set.Set String -> Int -> Gen Lc
+arbitraryLc vars 0 = LcVar . Var <$> elements (Set.toList vars)
+arbitraryLc vars size = oneof [arbitraryAbs, arbitraryApp]
   where
     arbitraryAbs = do
       arg <- string
-      body <- arbitraryAST (Set.insert arg vars) (size - 1)
-      return $ Abs arg body
+      body <- arbitraryLc (Set.insert arg vars) (size - 1)
+      return . LcAbs $ Abs arg body
     arbitraryApp = do
       size' <- choose (0, size - 1)
-      App <$> arbitraryAST vars size' <*> arbitraryAST vars (size - size')
+      lhs <- arbitraryLc vars size'
+      rhs <- arbitraryLc vars (size - size')
+      return . LcApp $ App lhs rhs
 
 string :: Gen String
 string = listOf1 char
@@ -26,7 +28,7 @@ string = listOf1 char
 char :: Gen Char
 char = elements ['a' .. 'z']
 
-prop_parsePrettyPrint :: AST -> Bool
+prop_parsePrettyPrint :: Lc -> Bool
 prop_parsePrettyPrint a =
   let (Right r) = parse line "<test>" (render . pPrint $ a)
   in r == a
