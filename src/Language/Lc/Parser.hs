@@ -1,7 +1,7 @@
 -- | Parse the canonical syntax of lambda calculus
 -- additional syntax is planned(like assignement), but not
 -- yet implemented
-module Parser
+module Language.Lc.Parser
   ( expr
   , line
   , parse
@@ -16,7 +16,7 @@ import Text.Megaparsec hiding (space)
 import qualified Text.Megaparsec.Lexer as L
 import Text.Megaparsec.String
 
-import Lib
+import Language.Lc
 
 -- Plumbing
 -- consume any whitespace-like things(i.e. comments)

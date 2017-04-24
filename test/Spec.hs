@@ -1,7 +1,7 @@
 import qualified Data.Set as Set
 
-import Lib
-import Parser
+import Language.Lc
+import Language.Lc.Parser
 
 import Test.QuickCheck
 

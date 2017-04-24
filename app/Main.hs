@@ -1,7 +1,7 @@
 module Main where
 
-import Lib
-import Parser
+import Language.Lc
+import Language.Lc.Parser
 
 main :: IO ()
 main = mapM_ go input

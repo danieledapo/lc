@@ -8,15 +8,15 @@ license-file:        LICENSE
 author:              Daniele D'Orazio
 maintainer:          d.dorazio96@gmail.com
 copyright:           MIT
-category:            Lambda Calculus
+category:            Language
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
-                      , Parser
+  exposed-modules:     Language.Lc
+                      , Language.Lc.Parser
   build-depends:       base >= 4.7 && < 5
                       , megaparsec >= 5 && < 6
                       , pretty >= 1.1 && < 2

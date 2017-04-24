@@ -1,5 +1,5 @@
 -- | A simple lambda calculus
-module Lib
+module Language.Lc
   ( Lc(..)
   , Var(..)
   , Abs(..)
