@@ -41,11 +41,18 @@ data Lc
 
 instance Pretty Lc where
   -- | pretty print the AST into a human readable form
-  pPrint (LcVar (Var v)) = text v
-  pPrint (LcAbs (Abs arg body)) =
-    char lam <> text arg <> char '.' <> pPrint body
-  pPrint (LcApp (App fn arg)) =
-    let parensIfNotVar p = maybeParens (not $ isVar p) (pPrint p)
+  pPrint (LcVar v) = pPrint v
+  pPrint (LcAbs a) = pPrint a
+  pPrint (LcApp a) = pPrint a
+
+instance Pretty Var where
+  pPrint (Var v) = text v
+
+instance Pretty Abs where
+  pPrint (Abs arg body) = char lam <> text arg <> char '.' <> pPrint body
+
+instance Pretty App where
+  pPrint (App fn arg) = let parensIfNotVar p = maybeParens (not $ isVar p) (pPrint p)
     in parensIfNotVar fn <+> parensIfNotVar arg
 
 isVar :: Lc -> Bool
