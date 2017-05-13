@@ -1,9 +1,6 @@
 -- | A simple lambda calculus
 module Language.Lc
   ( Lc(..)
-  , Var(..)
-  , Abs(..)
-  , App(..)
   , lam
   , pPrint
   , render
@@ -16,43 +13,19 @@ import Text.PrettyPrint.HughesPJClass (Pretty(..))
 lam :: Char
 lam = '\955'
 
--- | variable, a.k.a reference
-newtype Var = Var String deriving (Eq, Show)
-
--- | abstraction, a.k.a. anonymous function that takes one argument
--- and return one value
-data Abs =
-  Abs String
-      Lc
-  deriving (Eq, Show)
-
--- | function application, a.k.a call a lambda with an argument
-data App =
-  App Lc
-      Lc
-  deriving (Eq, Show)
-
 -- | the AST of the vanilla untyped lambda calculus
 data Lc
-  = LcVar Var
-  | LcAbs Abs
-  | LcApp App
+  = LcVar String -- ^ variable, a.k.a reference
+  | LcAbs String Lc -- ^ abstraction, a.k.a. anonymous function that takes one argument and returns one value
+  | LcApp Lc Lc -- ^ function application, a.k.a call a lambda with an argument
   deriving (Show, Eq)
 
 instance Pretty Lc where
   -- | pretty print the AST into a human readable form
-  pPrint (LcVar v) = pPrint v
-  pPrint (LcAbs a) = pPrint a
-  pPrint (LcApp a) = pPrint a
-
-instance Pretty Var where
-  pPrint (Var v) = text v
-
-instance Pretty Abs where
-  pPrint (Abs arg body) = char lam <> text arg <> char '.' <> pPrint body
-
-instance Pretty App where
-  pPrint (App fn arg) = let parensIfNotVar p = maybeParens (not $ isVar p) (pPrint p)
+  pPrint (LcVar v) = text v
+  pPrint (LcAbs arg body) = char lam <> text arg <> char '.' <> pPrint body
+  pPrint (LcApp fn arg) =
+    let parensIfNotVar p = maybeParens (not $ isVar p) (pPrint p)
     in parensIfNotVar fn <+> parensIfNotVar arg
 
 isVar :: Lc -> Bool
