@@ -90,17 +90,21 @@ fromLcWithState state (LcAbs x body) = DAbs x (fromLcWithState state' body)
 -- Interpret
 --------------------------------------------------------------
 
--- | substitute in the given DeBruijn the Var of the given Index
--- with the given DeBruijn
-substitute :: DeBruijn -- ^ the DeBruijn to search into
-  -> Integer -- ^ the Var's index that we want to replace with
-  -> DeBruijn -- ^ the DeBruijn to use as the replacement
-  -> DeBruijn
-substitute v@(DVar (Index ix)) i x = if ix == i then x else v
-substitute v@(DVar (Free _)) _ _ = v
-substitute (DAbs a body) i x = DAbs a $ substitute body (i + 1) x
-substitute (DApp fn arg) i x = DApp (substitute fn i x) (substitute arg i x)
+-- | evaluate the given DeBruijn, returns the given one if it's
+-- not reducible
+eval :: DeBruijn -> DeBruijn
+eval d = case betaReduceAll d of
+  [] -> d
+  rs -> last rs
 
+-- | call betaReduce until no further reductions are possible,
+-- empty list if no reductions possible
+betaReduceAll :: DeBruijn -> [DeBruijn]
+betaReduceAll x =
+  let x' = betaReduce x
+  in if x /= x'
+      then x' : betaReduceAll x'
+      else []
 
 -- | betaReduce the given DeBruijn, if it's not a DApp
 -- then return the original DeBruijn.
@@ -116,30 +120,21 @@ betaReduce mainApp@(DApp app@(DApp _ _) arg) =
 betaReduce x = x
 
 
--- | call betaReduce until no further reductions are possible,
--- empty list if no reductions possible
-betaReduceAll :: DeBruijn -> [DeBruijn]
-betaReduceAll = go
-  where
-    go :: DeBruijn -> [DeBruijn]
-    go x =
-      let x' = betaReduce x
-      in if x /= x'
-           then x' : go x'
-           else []
+-- | substitute in the given DeBruijn the Var of the given Index
+-- with the given DeBruijn
+substitute :: DeBruijn -- ^ the DeBruijn to search into
+  -> Integer -- ^ the Var's index that we want to replace with
+  -> DeBruijn -- ^ the DeBruijn to use as the replacement
+  -> DeBruijn
+substitute v@(DVar (Index ix)) i x = if ix == i then x else v
+substitute v@(DVar (Free _)) _ _ = v
+substitute (DAbs a body) i x = DAbs a $ substitute body (i + 1) x
+substitute (DApp fn arg) i x = DApp (substitute fn i x) (substitute arg i x)
 
-
--- | evaluate the given DeBruijn, returns the given one if it's
--- not reducible
-eval :: DeBruijn -> DeBruijn
-eval d = case betaReduceAll d of
-  [] -> d
-  rs -> last rs
 
 --------------------------------------------------------------
 -- Utility
 --------------------------------------------------------------
-
 
 -- | fold DVar using f with initial accumulator a
 foldVars :: (a -> DeBruijnVar -> a) -> a -> DeBruijn -> a
