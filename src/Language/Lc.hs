@@ -1,12 +1,17 @@
 -- | A simple lambda calculus
 module Language.Lc
-  ( Lc(..)
-  , naiveBetaReduce
-  , naiveBetaReduceAll
-  , naiveEval
+  (
+  -- core
+    Lc(..)
   , lam
-  , pPrint
-  , render
+
+  -- interpreter
+  , Interpreter(..)
+  , betaReduce
+  , betaReduceAll
+  , eval
+  , naiveInterpreter
+
   ) where
 
 import Data.Maybe (fromMaybe)
@@ -14,6 +19,11 @@ import qualified Data.Map as Map
 
 import Text.PrettyPrint.HughesPJ
 import Text.PrettyPrint.HughesPJClass (Pretty(..))
+
+
+--------------------------------------------------------------
+-- Core
+--------------------------------------------------------------
 
 -- | Unicode lambda, a.k.a 0x03BB
 lam :: Char
@@ -33,39 +43,66 @@ instance Pretty Lc where
   pPrint (LcApp fn arg) =
     let parensIfNotVar p = maybeParens (not $ isVar p) (pPrint p)
     in parensIfNotVar fn <+> parensIfNotVar arg
+    where
+      isVar :: Lc -> Bool
+      isVar (LcVar _) = True
+      isVar _ = False
 
-isVar :: Lc -> Bool
-isVar (LcVar _) = True
-isVar _ = False
+
+--------------------------------------------------------------
+-- Interpreter
+--------------------------------------------------------------
+
+data Interpreter i = Interpreter
+  { _betaReduce :: i -> i
+  , _fromLc :: Lc -> i
+  , _toLc :: i -> Lc
+  }
+
+-- | evaluate the given Lc, returns the given one if it's
+-- not reducible
+eval :: Eq i => Interpreter i -> Lc -> Lc
+eval i lc = case betaReduceAll i lc of
+  [] -> lc
+  lcs -> last lcs
+
+
+-- | betaReduce the given Lc until no further reductions
+-- are possible
+betaReduceAll :: Eq i => Interpreter i -> Lc -> [Lc]
+betaReduceAll interpreter = go . _fromLc interpreter
+  where
+    go ilc =
+      let ilc' = _betaReduce interpreter ilc
+      in if ilc /= ilc'
+          then _toLc interpreter ilc' : go ilc'
+          else []
+
+
+-- | betaReduce the given Lc, if it's not a LcApp
+-- then return the original Lc.
+-- Commonly called function application
+betaReduce :: Interpreter i -> Lc -> Lc
+betaReduce interpreter =
+  _toLc interpreter . _betaReduce interpreter . _fromLc interpreter
 
 
 --------------------------------------------------------------
 -- Naive interpreter
 --------------------------------------------------------------
 
+-- | naive interpreter, it uses naiveBetaReduce
+naiveInterpreter :: Interpreter Lc
+naiveInterpreter =
+  Interpreter {_betaReduce = naiveBetaReduce, _fromLc = id, _toLc = id}
+
+
 -- | the environment a LcAbs is evaluated in
 type Environment = Map.Map String Lc
-
--- | evaluate the given Lc, returns the given one if it's
--- not reducible
-naiveEval :: Lc -> Lc
-naiveEval lc = case naiveBetaReduceAll lc of
-  [] -> lc
-  bs -> last bs
-
--- | betaReduce the given Lc until no further reductions
--- are possible
-naiveBetaReduceAll :: Lc -> [Lc]
-naiveBetaReduceAll lc =
-  let lc' = naiveBetaReduce lc
-  in if lc /= lc'
-      then lc' : naiveBetaReduceAll lc'
-      else []
 
 -- | naive betaReduce
 naiveBetaReduce :: Lc -> Lc
 naiveBetaReduce = betaReduceWithEnv Map.empty
-
 
 -- | betaReduce in the given environment
 betaReduceWithEnv :: Environment -> Lc -> Lc

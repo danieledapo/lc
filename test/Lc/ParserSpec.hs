@@ -8,6 +8,9 @@ import Lc.Arbitrary ()
 import Test.Hspec
 import Test.QuickCheck
 
+import Text.PrettyPrint.HughesPJ
+import Text.PrettyPrint.HughesPJClass (Pretty(..))
+
 
 --------------------------------------------------------------
 -- Parser

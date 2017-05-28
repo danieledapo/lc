@@ -1,6 +1,8 @@
 module Main where
 
-import Language.Lc
+import Text.PrettyPrint.HughesPJ
+import Text.PrettyPrint.HughesPJClass (Pretty(..))
+
 import Language.Lc.Parser
 
 main :: IO ()

@@ -30,6 +30,7 @@ executable lc-exe
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , lc
+                     , pretty >= 1.1 && < 2
   default-language:    Haskell2010
 
 test-suite lc-test
@@ -37,12 +38,15 @@ test-suite lc-test
   hs-source-dirs:      test
   other-modules:       Lc.Arbitrary
                      , Lc.DeBruijnSpec
+                     , Lc.Interpreter
+                     , Lc.NaiveSpec
                      , Lc.ParserSpec
   main-is:             Spec.hs
   build-depends:       base
                      , containers >= 0.5 && < 0.6
                      , hspec >= 2.0 && < 3.0
                      , lc
+                     , pretty >= 1.1 && < 2
                      , safe >= 0.3 && < 0.4
                      , QuickCheck >= 2 && < 3
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N

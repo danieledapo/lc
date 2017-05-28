@@ -4,15 +4,8 @@ module Language.Lc.DeBruijn
   ( DeBruijn(..)
   , DeBruijnVar(..)
 
-  -- conversion
-  , fromLc
-  , toLc
-
   -- interpreter
-  , betaReduce
-  , betaReduceAll
-  , eval
-  , substitute
+  , deBruijnInterpreter
 
   -- utility
   , boundVars
@@ -44,6 +37,41 @@ data DeBruijn
   | DApp DeBruijn
          DeBruijn -- ^ an App
   deriving (Eq, Show)
+
+
+--------------------------------------------------------------
+-- Interpreter
+--------------------------------------------------------------
+
+deBruijnInterpreter :: Interpreter DeBruijn
+deBruijnInterpreter =
+  Interpreter {_betaReduce = deBruijnBetaReduce, _fromLc = fromLc, _toLc = toLc}
+
+
+-- | betaReduce the given DeBruijn, if it's not a DApp
+-- then return the original DeBruijn.
+-- Commonly called function application
+deBruijnBetaReduce :: DeBruijn -> DeBruijn
+deBruijnBetaReduce (DApp (DAbs _ fn) arg) =  substitute fn 0 arg
+deBruijnBetaReduce mainApp@(DApp app@(DApp _ _) arg) =
+  let app' = deBruijnBetaReduce app
+      arg' = deBruijnBetaReduce arg
+  in if app /= app' || arg /= arg'  -- ensure both fn and arg have already been reduced
+       then DApp app' arg'
+       else mainApp
+deBruijnBetaReduce x = x
+
+
+-- | substitute in the given DeBruijn the Var of the given Index
+-- with the given DeBruijn
+substitute :: DeBruijn -- ^ the DeBruijn to search into
+  -> Integer -- ^ the Var's index that we want to replace with
+  -> DeBruijn -- ^ the DeBruijn to use as the replacement
+  -> DeBruijn
+substitute v@(DVar (Index ix)) i x = if ix == i then x else v
+substitute v@(DVar (Free _)) _ _ = v
+substitute (DAbs a body) i x = DAbs a $ substitute body (i + 1) x
+substitute (DApp fn arg) i x = DApp (substitute fn i x) (substitute arg i x)
 
 
 --------------------------------------------------------------
@@ -84,52 +112,6 @@ fromLcWithState state (LcAbs x body) = DAbs x (fromLcWithState state' body)
   where
     state' = state {depth = incDepth, varToAbsIx = Map.insert x incDepth (varToAbsIx state)}
     incDepth = depth state + 1
-
-
---------------------------------------------------------------
--- Interpret
---------------------------------------------------------------
-
--- | evaluate the given DeBruijn, returns the given one if it's
--- not reducible
-eval :: DeBruijn -> DeBruijn
-eval d = case betaReduceAll d of
-  [] -> d
-  rs -> last rs
-
--- | call betaReduce until no further reductions are possible,
--- empty list if no reductions possible
-betaReduceAll :: DeBruijn -> [DeBruijn]
-betaReduceAll x =
-  let x' = betaReduce x
-  in if x /= x'
-      then x' : betaReduceAll x'
-      else []
-
--- | betaReduce the given DeBruijn, if it's not a DApp
--- then return the original DeBruijn.
--- Commonly called function application
-betaReduce :: DeBruijn -> DeBruijn
-betaReduce (DApp (DAbs _ fn) arg) =  substitute fn 0 arg
-betaReduce mainApp@(DApp app@(DApp _ _) arg) =
-  let app' = betaReduce app
-      arg' = betaReduce arg
-  in if app /= app' || arg /= arg'  -- ensure both fn and arg have already been reduced
-       then DApp app' arg'
-       else mainApp
-betaReduce x = x
-
-
--- | substitute in the given DeBruijn the Var of the given Index
--- with the given DeBruijn
-substitute :: DeBruijn -- ^ the DeBruijn to search into
-  -> Integer -- ^ the Var's index that we want to replace with
-  -> DeBruijn -- ^ the DeBruijn to use as the replacement
-  -> DeBruijn
-substitute v@(DVar (Index ix)) i x = if ix == i then x else v
-substitute v@(DVar (Free _)) _ _ = v
-substitute (DAbs a body) i x = DAbs a $ substitute body (i + 1) x
-substitute (DApp fn arg) i x = DApp (substitute fn i x) (substitute arg i x)
 
 
 --------------------------------------------------------------
