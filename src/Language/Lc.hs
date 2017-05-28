@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
+
 -- | A simple lambda calculus
 module Language.Lc
   (
@@ -53,15 +55,17 @@ instance Pretty Lc where
 -- Interpreter
 --------------------------------------------------------------
 
-data Interpreter i = Interpreter
-  { _betaReduce :: i -> i
-  , _fromLc :: Lc -> i
-  , _toLc :: i -> Lc
-  }
+-- | Interpreter, betaReduce the Lc
+class Eq (InternalLc i) => Interpreter i where
+  type InternalLc i :: *
+  fromLc :: i -> Lc -> InternalLc i
+  toLc :: i -> InternalLc i -> Lc
+  betaReduceI :: i -> InternalLc i  -> InternalLc i
+
 
 -- | evaluate the given Lc, returns the given one if it's
 -- not reducible
-eval :: Eq i => Interpreter i -> Lc -> Lc
+eval :: Interpreter i => i -> Lc -> Lc
 eval i lc = case betaReduceAll i lc of
   [] -> lc
   lcs -> last lcs
@@ -69,22 +73,22 @@ eval i lc = case betaReduceAll i lc of
 
 -- | betaReduce the given Lc until no further reductions
 -- are possible
-betaReduceAll :: Eq i => Interpreter i -> Lc -> [Lc]
-betaReduceAll interpreter = go . _fromLc interpreter
+betaReduceAll :: Interpreter i => i -> Lc -> [Lc]
+betaReduceAll interpreter = go . fromLc interpreter
   where
     go ilc =
-      let ilc' = _betaReduce interpreter ilc
+      let ilc' = interpreter `betaReduceI` ilc
       in if ilc /= ilc'
-          then _toLc interpreter ilc' : go ilc'
+          then interpreter `toLc` ilc' : go ilc'
           else []
 
 
 -- | betaReduce the given Lc, if it's not a LcApp
 -- then return the original Lc.
 -- Commonly called function application
-betaReduce :: Interpreter i -> Lc -> Lc
+betaReduce :: Interpreter i => i -> Lc -> Lc
 betaReduce interpreter =
-  _toLc interpreter . _betaReduce interpreter . _fromLc interpreter
+  toLc interpreter . betaReduceI interpreter . fromLc interpreter
 
 
 --------------------------------------------------------------
@@ -92,9 +96,15 @@ betaReduce interpreter =
 --------------------------------------------------------------
 
 -- | naive interpreter, it uses naiveBetaReduce
-naiveInterpreter :: Interpreter Lc
-naiveInterpreter =
-  Interpreter {_betaReduce = naiveBetaReduce, _fromLc = id, _toLc = id}
+naiveInterpreter = NaiveInterpreter
+
+data NaiveInterpreter = NaiveInterpreter
+
+instance Interpreter NaiveInterpreter where
+  type InternalLc NaiveInterpreter = Lc
+  fromLc _ = id
+  toLc _ = id
+  betaReduceI _ = naiveBetaReduce
 
 
 -- | the environment a LcAbs is evaluated in

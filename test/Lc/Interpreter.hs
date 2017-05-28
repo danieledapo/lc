@@ -5,7 +5,7 @@ import Language.Lc
 import Test.Hspec
 
 
-interpreterSpec :: Eq i => Interpreter i -> SpecWith ()
+interpreterSpec :: Interpreter i => i -> SpecWith ()
 interpreterSpec interpreter =
     context "betaReduce" $ do
         it "correctly betaReduce I" $

@@ -24,11 +24,11 @@ dVar = DVar . Index
 dFree :: String -> DeBruijn
 dFree = DVar . Free
 
-toLc :: DeBruijn -> Lc
-toLc = _toLc deBruijnInterpreter
+toLc' :: DeBruijn -> Lc
+toLc' = toLc deBruijnInterpreter
 
-fromLc :: Lc -> DeBruijn
-fromLc = _fromLc deBruijnInterpreter
+fromLc' :: Lc -> DeBruijn
+fromLc' = fromLc deBruijnInterpreter
 
 
 spec :: Spec
@@ -36,7 +36,7 @@ spec = parallel $
   describe "DeBruijn" $ do
     context "conversion back and forth between Lc and DeBruijn" $ do
       it "gives the original Lc" $
-        property (\lc -> (toLc . fromLc $ lc) == lc)
+        property (\lc -> (toLc' . fromLc' $ lc) == lc)
 
       it "generates indexes between 0 and the number of Abs" $
         property prop_deBruijnIndexes
@@ -44,8 +44,8 @@ spec = parallel $
       it "converts from and to some examples Lc" $
         mapM_
           (\(lc, e) ->
-            let db = fromLc lc
-            in (db, toLc db) `shouldBe` (e, lc))
+            let db = fromLc' lc
+            in (db, toLc' db) `shouldBe` (e, lc))
           [ (LcVar "x", dFree "x")
           , (LcAbs "x" (LcVar "x"), DAbs "x" (dVar 0))
           , (LcApp (LcVar "x") (LcVar "y"), DApp (dFree "x") (dFree "y"))
@@ -71,7 +71,7 @@ prop_deBruijnIndexes lc = sized go
   where
     go :: Int -> Gen Bool
     go size =
-      let db = fromLc lc
+      let db = fromLc' lc
           allVars = vars db
           bvars = boundVars db
           ma = maximumDef 0 bvars

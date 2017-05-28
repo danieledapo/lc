@@ -1,5 +1,6 @@
--- | Beta reduce using DeBruijn indexes
+{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 
+-- | Beta reduce using DeBruijn indexes
 module Language.Lc.DeBruijn
   ( DeBruijn(..)
   , DeBruijnVar(..)
@@ -43,9 +44,16 @@ data DeBruijn
 -- Interpreter
 --------------------------------------------------------------
 
-deBruijnInterpreter :: Interpreter DeBruijn
-deBruijnInterpreter =
-  Interpreter {_betaReduce = deBruijnBetaReduce, _fromLc = fromLc, _toLc = toLc}
+-- | use De Bruijn indexes to interpret a given Lc
+deBruijnInterpreter = DeBruijnInterpreter
+
+data DeBruijnInterpreter = DeBruijnInterpreter
+
+instance Interpreter DeBruijnInterpreter where
+  type InternalLc DeBruijnInterpreter = DeBruijn
+  fromLc _ = deBruijnFromLc
+  toLc _ = deBruijnToLc
+  betaReduceI _ = deBruijnBetaReduce
 
 
 -- | betaReduce the given DeBruijn, if it's not a DApp
@@ -79,8 +87,8 @@ substitute (DApp fn arg) i x = DApp (substitute fn i x) (substitute arg i x)
 --------------------------------------------------------------
 
 -- | convert back from DeBruijn to Lc
-toLc :: DeBruijn -> Lc
-toLc = go []
+deBruijnToLc :: DeBruijn -> Lc
+deBruijnToLc = go []
   where
     go _ (DVar (Free v)) = LcVar v
     go varStack (DVar (Index ix)) = LcVar $ varStack `genericIndex` ix
@@ -94,8 +102,8 @@ data FromLcState = FromLcState
   } deriving (Eq, Show)
 
 -- | convert a Lc to the DeBruijn representation
-fromLc :: Lc -> DeBruijn
-fromLc = fromLcWithState FromLcState {depth = 0, varToAbsIx = Map.empty}
+deBruijnFromLc :: Lc -> DeBruijn
+deBruijnFromLc = fromLcWithState FromLcState {depth = 0, varToAbsIx = Map.empty}
 
 fromLcWithState :: FromLcState -> Lc -> DeBruijn
 fromLcWithState state (LcVar v) =
