@@ -45,6 +45,7 @@ data DeBruijn
 --------------------------------------------------------------
 
 -- | use De Bruijn indexes to interpret a given Lc
+deBruijnInterpreter :: DeBruijnInterpreter
 deBruijnInterpreter = DeBruijnInterpreter
 
 data DeBruijnInterpreter = DeBruijnInterpreter

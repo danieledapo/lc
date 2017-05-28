@@ -96,6 +96,7 @@ betaReduce interpreter =
 --------------------------------------------------------------
 
 -- | naive interpreter, it uses naiveBetaReduce
+naiveInterpreter :: NaiveInterpreter
 naiveInterpreter = NaiveInterpreter
 
 data NaiveInterpreter = NaiveInterpreter
