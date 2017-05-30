@@ -3,11 +3,12 @@
 -- yet implemented
 module Language.Lc.Parser
   ( expr
+  , iden
+  , lexeme
   , line
-  , parse
-  , parseMaybe
-  , parseTest
-  , program
+  , parens
+  , space
+  , symbol
   ) where
 
 import Control.Applicative (empty)
@@ -50,11 +51,7 @@ iden = lexeme $ some alphaNumChar
 -- Main parser
 --------------------------------------------------------------
 
--- | parse an entire program, that is multiple 'line'
-program :: Parser [Lc]
-program = many line <* eof
-
--- | parse a single 'line', that is an 'expr' preceded by spaces
+-- | parse a single 'line', that is an `expr` preceded by spaces
 line :: Parser Lc
 line = space >> expr
 

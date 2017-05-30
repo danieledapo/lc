@@ -1,5 +1,7 @@
 module Main where
 
+import Text.Megaparsec
+
 import Text.PrettyPrint.HughesPJ
 import Text.PrettyPrint.HughesPJClass (Pretty(..))
 

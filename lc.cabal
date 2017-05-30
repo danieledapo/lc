@@ -15,12 +15,15 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Language.Lc
+  exposed-modules:      Language.ELc
+                      , Language.ELc.Parser
+                      , Language.Lc
                       , Language.Lc.DeBruijn
                       , Language.Lc.Parser
-  build-depends:       base >= 4.7 && < 5
+  build-depends:        base >= 4.7 && < 5
                       , containers >= 0.5 && < 0.6
                       , megaparsec >= 5 && < 6
+                      , mtl >= 2 && < 3
                       , pretty >= 1.1 && < 2
   default-language:    Haskell2010
 
@@ -30,13 +33,17 @@ executable lc-exe
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , lc
+                     , megaparsec >= 5 && < 6
                      , pretty >= 1.1 && < 2
   default-language:    Haskell2010
 
 test-suite lc-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
-  other-modules:       Lc.Arbitrary
+  other-modules:       ELc.Arbitrary
+                     , ELc.ExecSpec
+                     , ELc.ParserSpec
+                     , Lc.Arbitrary
                      , Lc.DeBruijnSpec
                      , Lc.Interpreter
                      , Lc.NaiveSpec
@@ -46,6 +53,8 @@ test-suite lc-test
                      , containers >= 0.5 && < 0.6
                      , hspec >= 2.0 && < 3.0
                      , lc
+                     , megaparsec >= 5 && < 6
+                     , mtl >= 2 && < 3
                      , pretty >= 1.1 && < 2
                      , safe >= 0.3 && < 0.4
                      , QuickCheck >= 2 && < 3

@@ -8,6 +8,8 @@ import Lc.Arbitrary ()
 import Test.Hspec
 import Test.QuickCheck
 
+import Text.Megaparsec
+
 import Text.PrettyPrint.HughesPJ
 import Text.PrettyPrint.HughesPJClass (Pretty(..))
 
@@ -39,4 +41,3 @@ spec = parallel $
                        (LcVar "a"))
                  (LcVar "b"))
         ]
-
