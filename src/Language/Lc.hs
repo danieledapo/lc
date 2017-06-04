@@ -55,7 +55,7 @@ instance Pretty Lc where
 -- Interpreter
 --------------------------------------------------------------
 
--- | Interpreter, betaReduce the Lc
+-- | Interpreter, 'betaReduce' the 'Lc'
 class Eq (InternalLc i) => Interpreter i where
   type InternalLc i :: *
   fromLc :: i -> Lc -> InternalLc i
@@ -63,7 +63,7 @@ class Eq (InternalLc i) => Interpreter i where
   betaReduceI :: i -> InternalLc i  -> InternalLc i
 
 
--- | evaluate the given Lc, returns the given one if it's
+-- | evaluate the given 'Lc', returns the given one if it's
 -- not reducible
 eval :: Interpreter i => i -> Lc -> Lc
 eval i lc = case betaReduceAll i lc of
@@ -71,7 +71,7 @@ eval i lc = case betaReduceAll i lc of
   lcs -> last lcs
 
 
--- | betaReduce the given Lc until no further reductions
+-- | 'betaReduce' the given 'Lc' until no further reductions
 -- are possible
 betaReduceAll :: Interpreter i => i -> Lc -> [Lc]
 betaReduceAll interpreter = go . fromLc interpreter
@@ -83,8 +83,8 @@ betaReduceAll interpreter = go . fromLc interpreter
           else []
 
 
--- | betaReduce the given Lc, if it's not a LcApp
--- then return the original Lc.
+-- | betaReduce the given 'Lc', if it's not a 'LcApp'
+-- then return the original 'Lc'.
 -- Commonly called function application
 betaReduce :: Interpreter i => i -> Lc -> Lc
 betaReduce interpreter =
@@ -95,7 +95,7 @@ betaReduce interpreter =
 -- Naive interpreter
 --------------------------------------------------------------
 
--- | naive interpreter, it uses naiveBetaReduce
+-- | naive interpreter, it uses 'naiveBetaReduce'
 naiveInterpreter :: NaiveInterpreter
 naiveInterpreter = NaiveInterpreter
 
@@ -108,14 +108,14 @@ instance Interpreter NaiveInterpreter where
   betaReduceI _ = naiveBetaReduce
 
 
--- | the environment a LcAbs is evaluated in
+-- | the environment a 'LcAbs' is evaluated in
 type Environment = Map.Map String Lc
 
--- | naive betaReduce
+-- | naive 'betaReduce'
 naiveBetaReduce :: Lc -> Lc
 naiveBetaReduce = betaReduceWithEnv Map.empty
 
--- | betaReduce in the given environment
+-- | 'betaReduce' in the given environment
 betaReduceWithEnv :: Environment -> Lc -> Lc
 betaReduceWithEnv env lcV@(LcVar v) =
   fromMaybe lcV $ Map.lookup v env

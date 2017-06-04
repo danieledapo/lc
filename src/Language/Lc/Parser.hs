@@ -50,11 +50,11 @@ iden = lexeme $ some alphaNumChar
 -- Main parser
 --------------------------------------------------------------
 
--- | parse an entire program, that is multiple `line`
+-- | parse an entire program, that is multiple 'line'
 program :: Parser [Lc]
 program = many line <* eof
 
--- | parse a single line, that is an `expr` preceded by spaces
+-- | parse a single 'line', that is an 'expr' preceded by spaces
 line :: Parser Lc
 line = space >> expr
 
@@ -69,11 +69,11 @@ expr = do
   where
     term = parens expr <|> abstraction <|> var
 
--- | parse a var
+-- | parse a 'LcVar'
 var :: Parser Lc
 var = fmap LcVar iden
 
--- | parse an abstraction
+-- | parse a 'LcAbs'
 abstraction :: Parser Lc
 abstraction = do
   void $ symbol [lam]

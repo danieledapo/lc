@@ -23,20 +23,20 @@ import Language.Lc
 import Data.List (genericIndex)
 import qualified Data.Map as Map
 
--- | a DeBruijn variable
+-- | a 'DeBruijn' variable
 data DeBruijnVar
-  = Free String -- ^ a free Var, not bound by any Abs
-                -- we keep the original name to call toLc
-  | Index Integer -- ^ the index of the Abs the Var was passed to
+  = Free String -- ^ a free 'Var', not bound by any 'Abs'
+                -- we keep the original name to call 'toLc'
+  | Index Integer -- ^ the index of the 'Abs' the 'Var' was passed to
   deriving (Eq, Show)
 
--- | use De Bruijn's indexes to evaluate the Lc
+-- | use De 'Bruijn's indexes to evaluate the 'Lc'
 data DeBruijn
-  = DVar DeBruijnVar -- ^ a Var can be Free or is identified by
+  = DVar DeBruijnVar -- ^ a 'DeBruijn' doc
   | DAbs String
-         DeBruijn -- ^ an Abs, note that we keep the original name only to call toLc
+         DeBruijn -- ^ an 'Abs', note that we keep the original name only to call 'toLc'
   | DApp DeBruijn
-         DeBruijn -- ^ an App
+         DeBruijn -- ^ an 'App'
   deriving (Eq, Show)
 
 
@@ -44,7 +44,7 @@ data DeBruijn
 -- Interpreter
 --------------------------------------------------------------
 
--- | use De Bruijn indexes to interpret a given Lc
+-- | use 'DeBruijn' indexes to interpret a given 'Lc'
 deBruijnInterpreter :: DeBruijnInterpreter
 deBruijnInterpreter = DeBruijnInterpreter
 
@@ -57,8 +57,8 @@ instance Interpreter DeBruijnInterpreter where
   betaReduceI _ = deBruijnBetaReduce
 
 
--- | betaReduce the given DeBruijn, if it's not a DApp
--- then return the original DeBruijn.
+-- | 'betaReduce' the given 'DeBruijn', if it's not a 'DApp'
+-- then return the original 'DeBruijn'.
 -- Commonly called function application
 deBruijnBetaReduce :: DeBruijn -> DeBruijn
 deBruijnBetaReduce (DApp (DAbs _ fn) arg) =  substitute fn 0 arg
@@ -71,11 +71,11 @@ deBruijnBetaReduce mainApp@(DApp app@(DApp _ _) arg) =
 deBruijnBetaReduce x = x
 
 
--- | substitute in the given DeBruijn the Var of the given Index
--- with the given DeBruijn
-substitute :: DeBruijn -- ^ the DeBruijn to search into
-  -> Integer -- ^ the Var's index that we want to replace with
-  -> DeBruijn -- ^ the DeBruijn to use as the replacement
+-- | substitute in the given 'DeBruijn' the Var of the given 'Index'
+-- with the given 'DeBruijn'
+substitute :: DeBruijn -- ^ the 'DeBruijn' to search into
+  -> Integer -- ^ the 'Var's index that we want to replace with
+  -> DeBruijn -- ^ the 'DeBruijn' to use as the replacement
   -> DeBruijn
 substitute v@(DVar (Index ix)) i x = if ix == i then x else v
 substitute v@(DVar (Free _)) _ _ = v
@@ -87,7 +87,7 @@ substitute (DApp fn arg) i x = DApp (substitute fn i x) (substitute arg i x)
 -- Conversion back and forth between Lc and DeBruijn
 --------------------------------------------------------------
 
--- | convert back from DeBruijn to Lc
+-- | convert back from 'DeBruijn' to 'Lc'
 deBruijnToLc :: DeBruijn -> Lc
 deBruijnToLc = go []
   where
@@ -96,13 +96,13 @@ deBruijnToLc = go []
     go varStack (DApp fn arg) = LcApp (go varStack fn) (go varStack arg)
     go varStack (DAbs param body) = LcAbs param (go (param:varStack) body)
 
--- | state to pass around when converting Lc to DeBruijn
+-- | state to pass around when converting 'Lc' to 'DeBruijn'
 data FromLcState = FromLcState
   { depth :: Integer -- ^ a.k.a number of Abs met so far
   , varToAbsIx :: Map.Map String Integer -- ^ var to the lambda index it was defined in
   } deriving (Eq, Show)
 
--- | convert a Lc to the DeBruijn representation
+-- | convert a 'Lc' to the 'DeBruijn' representation
 deBruijnFromLc :: Lc -> DeBruijn
 deBruijnFromLc = fromLcWithState FromLcState {depth = 0, varToAbsIx = Map.empty}
 
@@ -127,7 +127,7 @@ fromLcWithState state (LcAbs x body) = DAbs x (fromLcWithState state' body)
 -- Utility
 --------------------------------------------------------------
 
--- | fold DVar using f with initial accumulator a
+-- | fold 'DVar' using f with initial accumulator a
 foldVars :: (a -> DeBruijnVar -> a) -> a -> DeBruijn -> a
 foldVars f acc (DVar dbi) = f acc dbi
 foldVars f acc (DAbs _ body) = foldVars f acc body
@@ -135,32 +135,32 @@ foldVars f acc (DApp fn arg) =
   let acc' = foldVars f acc fn
   in foldVars f acc' arg
 
--- | map the given f to all the DVar in db
+-- | map the given f to all the 'DVar' in db
 mapVars :: (DeBruijnVar -> a) -> DeBruijn -> [a]
 mapVars f = reverse . foldVars (\acc v -> f v : acc) []
 
--- | return all the DVar in db
+-- | return all the 'DVar' in db
 vars :: DeBruijn -> [DeBruijnVar]
 vars = mapVars id
 
--- | map the given f to all the free DVar in db
+-- | map the given f to all the free 'DVar' in db
 mapFreeVars :: (String -> a) -> DeBruijn -> [a]
 mapFreeVars f = reverse . foldVars go []
   where
     go acc (Free v) = f v : acc
     go acc _ = acc
 
--- | return all the free DVar in db
+-- | return all the free 'DVar' in db
 freeVars :: DeBruijn -> [String]
 freeVars = mapFreeVars id
 
--- | map the given f to all the bound DVar in db
+-- | map the given f to all the bound 'DVar' in db
 mapBoundVars :: (Integer -> a) -> DeBruijn -> [a]
 mapBoundVars f = reverse . foldVars go []
   where
     go acc (Index ix) = f ix : acc
     go acc _ = acc
 
--- | return all the bound DVar in db
+-- | return all the bound 'DVar' in db
 boundVars :: DeBruijn -> [Integer]
 boundVars = mapBoundVars id
