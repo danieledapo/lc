@@ -5,7 +5,6 @@ module Language.Lc.Parser
   ( expr
   , iden
   , lexeme
-  , line
   , parens
   , space
   , symbol
@@ -51,9 +50,6 @@ iden = lexeme $ some alphaNumChar
 -- Main parser
 --------------------------------------------------------------
 
--- | parse a single 'line', that is an `expr` preceded by spaces
-line :: Parser Lc
-line = space >> expr
 
 -- | parse a lambda expression consuming any following spaces
 expr :: Parser Lc

@@ -1,20 +1,79 @@
 module Main where
 
-import Text.Megaparsec
+import Control.Monad.State
 
-import Text.PrettyPrint.HughesPJ
+import Language.ELc
+import qualified Language.ELc.Parser as EP
+import Language.Lc
+import Language.Lc.DeBruijn
+import qualified Language.Lc.Parser as P
+
+import System.Console.Haskeline
+
+import Text.Megaparsec
+import Text.Megaparsec.String
+
 import Text.PrettyPrint.HughesPJClass (Pretty(..))
 
-import Language.Lc.Parser
+
+--------------------------------------------------------------
+-- Cli
+--------------------------------------------------------------
+
+type Cli a = ExecStateT (InputT IO) a
+
+runCli :: Cli a -> ExecEnv -> IO a
+runCli cli env = runInputT defaultSettings (evalStateT cli env)
+
+output :: String -> Cli ()
+output = lift . outputStrLn
+
+
+--------------------------------------------------------------
+-- Main
+--------------------------------------------------------------
 
 main :: IO ()
-main = mapM_ go input
+main = runCli interactive emptyExecEnv
+
+
+--------------------------------------------------------------
+-- Interactive
+--------------------------------------------------------------
+
+interactive :: Cli ()
+interactive = do
+  mline <- lift $ getInputLine prompt
+  case mline of
+    Nothing -> return ()
+    Just "quit" -> return ()
+    Just line -> do
+      processLine line
+      interactive
   where
-    go l = do
-      putStr l
-      putStr " -> "
-      let (Right a) = parse line "<test>" l
-      putStr . show $ a
-      putStr " -> "
-      putStrLn . render . pPrint $ a
-    input = ["x", "λx.x", "x y", "λx y.x", "(λx y.x) a b"]
+    prompt = lam : " >> "
+
+processLine :: String -> Cli ()
+processLine inp =
+  case parse lineOrNothing "<stdin>" inp of
+    Left err -> printErr err
+    Right Nothing -> return ()
+    Right (Just elc) -> do
+      execEnv <- get
+      let (lc, execEnv') = runState (deBruijnInterpreter `exec` elc) execEnv
+
+      put execEnv'
+      output . show . pPrint $ lc
+  where
+    printErr = output . parseErrorPretty
+
+
+--------------------------------------------------------------
+-- Plumbing
+--------------------------------------------------------------
+
+lineOrNothing :: Parser (Maybe ELc)
+lineOrNothing = try line <|> nothing
+  where
+    line = fmap Just (EP.expr <* P.space)
+    nothing = P.space >> eof >> return Nothing

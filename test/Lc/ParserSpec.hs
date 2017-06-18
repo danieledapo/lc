@@ -19,7 +19,7 @@ import Text.PrettyPrint.HughesPJClass (Pretty(..))
 --------------------------------------------------------------
 
 parseLine :: String -> Maybe Lc
-parseLine = parseMaybe line
+parseLine = parseMaybe expr
 
 spec :: Spec
 spec = parallel $

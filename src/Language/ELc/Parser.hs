@@ -1,5 +1,9 @@
 -- | parse an 'ELc'
-module Language.ELc.Parser where
+module Language.ELc.Parser
+  ( expr
+  , lc
+  , let_
+  ) where
 
 import Control.Monad (void)
 
@@ -8,6 +12,7 @@ import qualified Language.Lc.Parser as P
 
 import Text.Megaparsec
 import Text.Megaparsec.String
+
 
 -- | parse an expression, a 'let_' or 'lc'
 expr :: Parser ELc
@@ -22,5 +27,5 @@ let_ :: Parser ELc
 let_ = do
   name <- P.iden
   void $ P.symbol "="
-  value <- P.line
+  value <- P.expr
   return . ELcLet . Let name $ value
