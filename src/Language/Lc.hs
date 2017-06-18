@@ -16,9 +16,6 @@ module Language.Lc
 
   ) where
 
-import Data.Maybe (fromMaybe)
-import qualified Data.Map as Map
-
 import Text.PrettyPrint.HughesPJ
 import Text.PrettyPrint.HughesPJClass (Pretty(..))
 
@@ -108,29 +105,30 @@ instance Interpreter NaiveInterpreter where
   betaReduceI _ = naiveBetaReduce
 
 
--- | the environment a 'LcAbs' is evaluated in
-type Environment = Map.Map String Lc
-
 -- | naive 'betaReduce'
 naiveBetaReduce :: Lc -> Lc
-naiveBetaReduce = betaReduceWithEnv Map.empty
+naiveBetaReduce (LcApp (LcAbs p fn) arg) = substitute fn p arg
+naiveBetaReduce mainApp@(LcApp app@(LcApp _ _) arg) =
+  let app' = naiveBetaReduce app
+      arg' = naiveBetaReduce arg
+  in if app /= app' || arg /= arg'  -- ensure both fn and arg have already been reduced
+       then LcApp app' arg'
+       else mainApp
+naiveBetaReduce lc = lc
 
--- | 'betaReduce' in the given environment
-betaReduceWithEnv :: Environment -> Lc -> Lc
-betaReduceWithEnv env lcV@(LcVar v) =
-  fromMaybe lcV $ Map.lookup v env
+-- | substitute in the given 'Lc' the LcVars with the given name
+-- with the given 'Lc'
+substitute :: Lc -> String -> Lc -> Lc
+substitute v@(LcVar var) param new =
+  if var == param
+    then new
+    else v
 
-betaReduceWithEnv env' (LcAbs p body) =
-  let env'' = Map.delete p env'
-  in LcAbs p $ betaReduceWithEnv env'' body
+substitute lcAbs@(LcAbs newParam fn) oldParam new =
+  if newParam /= oldParam
+    then LcAbs newParam $ substitute fn oldParam new
+    else lcAbs -- oldParam has been shadowed in this case
 
-betaReduceWithEnv env' (LcApp (LcAbs p body) arg) =
-  let env'' = Map.insert p arg env'
-  in betaReduceWithEnv env'' body
+substitute (LcApp fn arg) param new =
+  LcApp (substitute fn param new) (substitute arg param new)
 
-betaReduceWithEnv env' app@(LcApp fn arg) =
-  let fn' = betaReduceWithEnv env' fn
-      arg' = betaReduceWithEnv env' arg
-  in if fn /= fn' || arg /= arg'
-      then LcApp fn' arg'
-      else app

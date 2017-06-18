@@ -52,7 +52,11 @@ spec = parallel $
           , (LcAbs "x" (LcAbs "y" (LcVar "x")), DAbs "x" (DAbs "y" (dVar 1)))
           ]
 
-    interpreterSpec deBruijnInterpreter
+    context "interpreter" $ do
+      interpreterSpec deBruijnInterpreter
+
+      it "gives the same results as naiveInterpreter" $
+        property (\lc -> naiveInterpreter `eval` lc == deBruijnInterpreter `eval` lc)
 
     context "traversal" $
       it "returns all the vars" $ do
