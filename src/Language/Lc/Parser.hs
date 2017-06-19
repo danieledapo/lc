@@ -69,7 +69,7 @@ var = fmap LcVar iden
 -- | parse a 'LcAbs'
 abstraction :: Parser Lc
 abstraction = do
-  void $ symbol [lam]
+  void $ symbol [lam] <|> symbol "\\"
   args <- some iden
   void $ symbol "."
   body <- expr
