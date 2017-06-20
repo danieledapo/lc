@@ -43,7 +43,7 @@ parens = between (symbol "(") (symbol ")")
 
 -- | identifier
 iden :: Parser String
-iden = lexeme $ some alphaNumChar
+iden = lexeme . some $ alphaNumChar <|> char '_'
 
 
 --------------------------------------------------------------
