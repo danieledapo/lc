@@ -46,6 +46,11 @@ interpreterSpec interpreter =
         it "correctly betaReduce omega" $ do
             betaReduce' lcOmega `shouldBe` lcOmega
             eval' lcOmega `shouldBe` lcOmega
+
+        it "correctly betaReduce succ 0 f x" $ do
+            let expected = LcApp (LcVar "f") (LcVar "x")
+            eval' succ0 `shouldBe` expected
+
     where
         betaReduce' = betaReduce interpreter
         betaReduceAll' = betaReduceAll interpreter
@@ -87,3 +92,29 @@ lcOmega :: Lc
 lcOmega = LcApp lcW lcW
   where
     lcW = LcAbs "w" $ LcApp (LcVar "w") (LcVar "w")
+
+
+-- succ 0 fn x
+succ0 :: Lc
+succ0 =
+  LcApp
+    (LcAbs
+       "0"
+       (LcApp
+          (LcAbs
+             "succ"
+             (LcApp
+                (LcVar "f")
+                (LcApp
+                   (LcApp (LcAbs "f" (LcAbs "x" (LcVar "x"))) (LcVar "f"))
+                   (LcVar "x"))))
+          (LcAbs
+             "n"
+             (LcAbs
+                "f"
+                (LcAbs
+                   "x"
+                   (LcApp
+                      (LcVar "f")
+                      (LcApp (LcApp (LcVar "n") (LcVar "f")) (LcVar "x"))))))))
+    (LcAbs "f" (LcAbs "x" (LcVar "x")))

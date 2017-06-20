@@ -108,11 +108,11 @@ instance Interpreter NaiveInterpreter where
 -- | naive 'betaReduce'
 naiveBetaReduce :: Lc -> Lc
 naiveBetaReduce (LcApp (LcAbs p fn) arg) = substitute fn p arg
-naiveBetaReduce mainApp@(LcApp app@(LcApp _ _) arg) =
-  let app' = naiveBetaReduce app
+naiveBetaReduce mainApp@(LcApp fn arg) =
+  let fn' = naiveBetaReduce fn
       arg' = naiveBetaReduce arg
-  in if app /= app' || arg /= arg'  -- ensure both fn and arg have already been reduced
-       then LcApp app' arg'
+  in if fn /= fn' || arg /= arg'  -- ensure both fn and arg have already been reduced
+       then LcApp fn' arg'
        else mainApp
 naiveBetaReduce lc = lc
 

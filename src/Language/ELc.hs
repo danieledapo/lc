@@ -10,6 +10,7 @@ module Language.ELc
   , ExecStateT
   , exec
   , expandLet
+  , expandLets
   ) where
 
 import Control.Monad.State
@@ -68,7 +69,7 @@ exec
   => i -> ELc -> ExecState Lc
 exec interpreter (ELc lc) = do
   lets <- gets _lets
-  let lc' = foldl expandLet lc lets
+  let lc' = expandLets lc lets
   return $ interpreter `eval` lc'
 
 exec interpreter (ELcLet (Let name value)) = do
@@ -77,6 +78,10 @@ exec interpreter (ELcLet (Let name value)) = do
   modify (\(ExecEnv lets) -> ExecEnv (newLet : lets))
   return lc  -- exec the value just because yeah
 
+
+-- | tiny utility to expand all the given 'Let's, see 'expandLet'
+expandLets :: Lc -> [Let] -> Lc
+expandLets = foldl expandLet
 
 -- | 'Let' is nothing, but syntactic sugar for injecting
 -- a value under a name. Consider `let a = b in c`, that can

@@ -62,11 +62,11 @@ instance Interpreter DeBruijnInterpreter where
 -- Commonly called function application
 deBruijnBetaReduce :: DeBruijn -> DeBruijn
 deBruijnBetaReduce (DApp (DAbs _ fn) arg) =  substitute fn 0 arg
-deBruijnBetaReduce mainApp@(DApp app@(DApp _ _) arg) =
-  let app' = deBruijnBetaReduce app
+deBruijnBetaReduce mainApp@(DApp fn arg) =
+  let fn' = deBruijnBetaReduce fn
       arg' = deBruijnBetaReduce arg
-  in if app /= app' || arg /= arg'  -- ensure both fn and arg have already been reduced
-       then DApp app' arg'
+  in if fn /= fn' || arg /= arg'  -- ensure both fn and arg have already been reduced
+       then DApp fn' arg'
        else mainApp
 deBruijnBetaReduce x = x
 
