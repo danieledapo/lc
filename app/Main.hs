@@ -84,9 +84,11 @@ lineOrNothing = try line <|> nothing
 --------------------------------------------------------------
 
 initialExecEnv :: ExecEnv
-initialExecEnv = foldl f emptyExecEnv stdlib
+initialExecEnv =
+  let st = foldM_ (const f) () stdlib
+  in execState st emptyExecEnv
   where
-    f env let_ = execState (deBruijnInterpreter `exec` ELcLet let_) env
+    f let_ = void $ deBruijnInterpreter `exec` ELcLet let_
 
 
 stdlib :: [Let]
