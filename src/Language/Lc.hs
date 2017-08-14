@@ -90,6 +90,10 @@ betaReduce interpreter = toLc interpreter . betaReduceI interpreter . fromLc int
 --------------------------------------------------------------
 
 -- | naive interpreter, it uses 'naiveBetaReduce'
+-- This is a dynamic interpreter because the variable is retrieved only when it's needed even
+-- though it might not be in scope when defining the expression.
+-- For example, `(λfoo. (foo x) b) (λx y. y (x x))` eventually betaReduces to `b (b b)` since
+-- the `x` inside `(foo x) b` eventually resolves to `b`
 naiveInterpreter :: NaiveInterpreter
 naiveInterpreter = NaiveInterpreter
 

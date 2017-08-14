@@ -30,7 +30,31 @@ data DeBruijnVar
   | Index Integer -- ^ the index of the 'Abs' the 'Var' was passed to
   deriving (Eq, Show)
 
--- | use De 'Bruijn's indexes to evaluate the 'Lc'
+-- | use De 'Bruijn's indexes to evaluate the 'Lc'.
+-- This is a strict interpreter because if a variable is not in scope when
+-- defining the expression it will be free.
+-- For example, `(λfoo. (foo x) b) (λx y. y (x x))` eventually betaReduces to `x (b b)` since
+-- the `x` inside `(foo x) b` is free when declaring that expression
+--
+-- here's an example of a 'Lc' that will give different results
+--
+-- @
+--     LcApp
+--      ( LcAbs
+--        "foo"
+--        ( LcApp
+--          (LcApp (LcVar "foo") (LcVar "x"))
+--          ( LcApp (LcAbs "bz" (LcAbs "kaawc" (LcAbs "bar" (LcAbs "gu" (LcVar "someglobals")))))
+--                  (LcVar "y")
+--          )
+--        )
+--      )
+--      ( LcAbs "baz"
+--              (LcAbs "x" (LcApp (LcVar "baz") (LcApp (LcVar "x") (LcVar "x"))))
+--      )
+-- @
+--
+
 data DeBruijn
   = DVar DeBruijnVar -- ^ a 'DeBruijn' doc
   | DAbs String
@@ -62,12 +86,10 @@ instance Interpreter DeBruijnInterpreter where
 -- Commonly called function application
 deBruijnBetaReduce :: DeBruijn -> DeBruijn
 deBruijnBetaReduce (DApp (DAbs _ fn) arg) = substitute fn 0 arg
-deBruijnBetaReduce mainApp@(DApp fn arg) =
+deBruijnBetaReduce (DApp fn arg) =
   let fn'  = deBruijnBetaReduce fn
       arg' = deBruijnBetaReduce arg
-  in  if fn /= fn' || arg /= arg'  -- ensure both fn and arg have already been reduced
-        then DApp fn' arg'
-        else mainApp
+  in  DApp fn' arg' -- ensure both fn and arg have already been reduced
 deBruijnBetaReduce x = x
 
 

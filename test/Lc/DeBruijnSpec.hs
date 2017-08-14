@@ -46,11 +46,7 @@ spec = parallel $ describe "DeBruijn" $ do
       , (LcAbs "x" (LcAbs "y" (LcVar "x")), DAbs "x" (DAbs "y" (dVar 1)))
       ]
 
-  context "interpreter" $ do
-    interpreterSpec deBruijnInterpreter
-
-    it "gives the same results as naiveInterpreter"
-      $ property (\lc -> naiveInterpreter `eval` lc == deBruijnInterpreter `eval` lc)
+  context "interpreter" $ interpreterSpec deBruijnInterpreter
 
   context "traversal" $ it "returns all the vars" $ do
     vars exampleDb `shouldBe` [Free "x", Index 0, Index 1]
