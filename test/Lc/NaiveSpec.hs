@@ -8,6 +8,4 @@ import Test.Hspec
 
 
 spec :: Spec
-spec = parallel $
-    describe "naiveInterpreter" $
-      interpreterSpec naiveInterpreter
+spec = parallel $ describe "naiveInterpreter" $ interpreterSpec naiveInterpreter

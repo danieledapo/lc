@@ -26,8 +26,9 @@ import Language.Lc
 -- | consume any whitespace-like things(i.e. comments)
 space :: Parser ()
 space = L.space (void spaceChar) lineComment empty
-  where
-    lineComment = L.skipLineComment "#"
+ where
+  lineComment :: Parser ()
+  lineComment = L.skipLineComment "#"
 
 -- | a lexeme p is just p optionally followed by any spaces
 lexeme :: Parser a -> Parser a
@@ -59,12 +60,11 @@ expr = do
   -- collect all terms in the expression and bundle them in applications
   -- example: x y z -> [LcVar "x", LcVar "y", LcVar "z"] -> LcApp (LcApp (LcVar "x") (LcVar "y")) (LcVar "z")
   return $ foldl1 LcApp terms
-  where
-    term = parens expr <|> abstraction <|> var
+  where term = parens expr <|> abstraction <|> var
 
 -- | parse a 'LcVar'
 var :: Parser Lc
-var = fmap LcVar iden
+var = LcVar <$> iden
 
 -- | parse a 'LcAbs'
 abstraction :: Parser Lc

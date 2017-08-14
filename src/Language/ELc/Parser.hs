@@ -16,13 +16,11 @@ import Text.Megaparsec.String
 
 -- | parse an expression, a 'let_' or 'lc'
 expr :: Parser ELc
-expr = try let_' <|> lc
-  where
-    let_' = fmap ELcLet let_
+expr = try (ELcLet <$> let_) <|> lc
 
 -- | parse a normal 'lc'
 lc :: Parser ELc
-lc = fmap ELc P.expr
+lc = ELc <$> P.expr
 
 -- | parse a 'let_' like `a = 42`
 let_ :: Parser Let

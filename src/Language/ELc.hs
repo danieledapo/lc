@@ -64,9 +64,7 @@ type ExecStateT = StateT ExecEnv
 -- | exec the given 'Interpreter' on the given 'ELc' returning
 -- the final 'Lc' and the new state. In case of an 'ELcLet' the
 -- value is evaluated
-exec
-  :: Interpreter i
-  => i -> ELc -> ExecState Lc
+exec :: Interpreter i => i -> ELc -> ExecState Lc
 exec interpreter (ELc lc) = do
   lets <- gets _lets
   let lc' = expandLets lc lets

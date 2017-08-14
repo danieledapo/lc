@@ -24,20 +24,19 @@ instance Arbitrary Lc where
   arbitrary = sized $ arbitraryLc globals
 
 arbitraryLc :: Set.Set String -> Int -> Gen Lc
-arbitraryLc vars 0 = LcVar <$> elements (Set.toList vars)
-
+arbitraryLc vars 0    = LcVar <$> elements (Set.toList vars)
 arbitraryLc vars size = oneof [arbitraryAbs, arbitraryApp]
-  where
-    arbitraryAbs = do
-      arg <- string
-      body <- arbitraryLc (Set.insert arg vars) (size - 1)
-      return $ LcAbs arg body
+ where
+  arbitraryAbs = do
+    arg  <- string
+    body <- arbitraryLc (Set.insert arg vars) (size - 1)
+    return $ LcAbs arg body
 
-    arbitraryApp = do
-      size' <- choose (0, size - 1)
-      lhs <- arbitraryLc vars size'
-      rhs <- arbitraryLc vars (size - 1 - size')
-      return $ LcApp lhs rhs
+  arbitraryApp = do
+    size' <- choose (0, size - 1)
+    lhs   <- arbitraryLc vars size'
+    rhs   <- arbitraryLc vars (size - 1 - size')
+    return $ LcApp lhs rhs
 
 
 string :: Gen String

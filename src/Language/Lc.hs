@@ -64,7 +64,7 @@ class Eq (InternalLc i) => Interpreter i where
 -- not reducible
 eval :: Interpreter i => i -> Lc -> Lc
 eval i lc = case betaReduceAll i lc of
-  [] -> lc
+  []  -> lc
   lcs -> last lcs
 
 
@@ -72,20 +72,17 @@ eval i lc = case betaReduceAll i lc of
 -- are possible
 betaReduceAll :: Interpreter i => i -> Lc -> [Lc]
 betaReduceAll interpreter = go . fromLc interpreter
-  where
-    go ilc =
-      let ilc' = interpreter `betaReduceI` ilc
-      in if ilc /= ilc'
-          then interpreter `toLc` ilc' : go ilc'
-          else []
+ where
+  go ilc =
+    let ilc' = interpreter `betaReduceI` ilc
+    in  if ilc /= ilc' then interpreter `toLc` ilc' : go ilc' else []
 
 
 -- | betaReduce the given 'Lc', if it's not a 'LcApp'
 -- then return the original 'Lc'.
 -- Commonly called function application
 betaReduce :: Interpreter i => i -> Lc -> Lc
-betaReduce interpreter =
-  toLc interpreter . betaReduceI interpreter . fromLc interpreter
+betaReduce interpreter = toLc interpreter . betaReduceI interpreter . fromLc interpreter
 
 
 --------------------------------------------------------------
@@ -109,26 +106,20 @@ instance Interpreter NaiveInterpreter where
 naiveBetaReduce :: Lc -> Lc
 naiveBetaReduce (LcApp (LcAbs p fn) arg) = substitute fn p arg
 naiveBetaReduce mainApp@(LcApp fn arg) =
-  let fn' = naiveBetaReduce fn
+  let fn'  = naiveBetaReduce fn
       arg' = naiveBetaReduce arg
-  in if fn /= fn' || arg /= arg'  -- ensure both fn and arg have already been reduced
-       then LcApp fn' arg'
-       else mainApp
+  in  if fn /= fn' || arg /= arg'  -- ensure both fn and arg have already been reduced
+        then LcApp fn' arg'
+        else mainApp
 naiveBetaReduce lc = lc
 
 -- | substitute in the given 'Lc' the LcVars with the given name
 -- with the given 'Lc'
 substitute :: Lc -> String -> Lc -> Lc
-substitute v@(LcVar var) param new =
-  if var == param
-    then new
-    else v
+substitute v@(LcVar var) param new = if var == param then new else v
 
 substitute lcAbs@(LcAbs newParam fn) oldParam new =
-  if newParam /= oldParam
-    then LcAbs newParam $ substitute fn oldParam new
-    else lcAbs -- oldParam has been shadowed in this case
+  if newParam /= oldParam then LcAbs newParam $ substitute fn oldParam new else lcAbs -- oldParam has been shadowed in this case
 
-substitute (LcApp fn arg) param new =
-  LcApp (substitute fn param new) (substitute arg param new)
+substitute (LcApp fn arg) param new = LcApp (substitute fn param new) (substitute arg param new)
 
