@@ -5,7 +5,7 @@ import Control.Monad.State
 import Language.ELc
 import qualified Language.ELc.Parser as EP
 import Language.Lc
-import Language.Lc.DeBruijn
+import Language.Lc.Interpreter.DeBruijn
 import qualified Language.Lc.Parser as P
 
 import System.Console.Haskeline

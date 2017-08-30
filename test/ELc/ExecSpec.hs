@@ -4,6 +4,7 @@ import Control.Monad.State
 
 import Language.ELc
 import Language.Lc
+import Language.Lc.Interpreter.Dynamic
 
 import ELc.Arbitrary ()
 
@@ -24,12 +25,12 @@ runAll allElcs = evalState (go allElcs) emptyExecEnv
   go :: [ELc] -> ExecState [Lc]
   go []         = return []
   go (elc:elcs) = do
-    val  <- naiveInterpreter `exec` elc
+    val  <- dynamicInterpreter `exec` elc
     vals <- go elcs
     return $ val : vals
 
 runWithLets :: [Let] -> ELc -> Lc
-runWithLets lets elc = evalState (naiveInterpreter `exec` elc) (ExecEnv lets)
+runWithLets lets elc = evalState (dynamicInterpreter `exec` elc) (ExecEnv lets)
 
 spec :: Spec
 spec = describe "exec" $ do
@@ -49,4 +50,4 @@ spec = describe "exec" $ do
 
 
 prop_LetEvaluesToValue :: Let -> Bool
-prop_LetEvaluesToValue let_@(Let _ value) = eval naiveInterpreter value == run (ELcLet let_)
+prop_LetEvaluesToValue let_@(Let _ value) = eval dynamicInterpreter value == run (ELcLet let_)

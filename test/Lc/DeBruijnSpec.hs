@@ -3,7 +3,7 @@ module Lc.DeBruijnSpec where
 import qualified Data.Set as Set
 
 import Language.Lc
-import Language.Lc.DeBruijn
+import Language.Lc.Interpreter.DeBruijn
 
 import Lc.Arbitrary
 import Lc.Interpreter

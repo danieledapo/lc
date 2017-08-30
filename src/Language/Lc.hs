@@ -12,7 +12,6 @@ module Language.Lc
   , betaReduce
   , betaReduceAll
   , eval
-  , naiveInterpreter
 
   ) where
 
@@ -83,47 +82,4 @@ betaReduceAll interpreter = go . fromLc interpreter
 -- Commonly called function application
 betaReduce :: Interpreter i => i -> Lc -> Lc
 betaReduce interpreter = toLc interpreter . betaReduceI interpreter . fromLc interpreter
-
-
---------------------------------------------------------------
--- Naive interpreter
---------------------------------------------------------------
-
--- | naive interpreter, it uses 'naiveBetaReduce'
--- This is a dynamic interpreter because the variable is retrieved only when it's needed even
--- though it might not be in scope when defining the expression.
--- For example, `(λfoo. (foo x) b) (λx y. y (x x))` eventually betaReduces to `b (b b)` since
--- the `x` inside `(foo x) b` eventually resolves to `b`
-naiveInterpreter :: NaiveInterpreter
-naiveInterpreter = NaiveInterpreter
-
-data NaiveInterpreter = NaiveInterpreter
-
-instance Interpreter NaiveInterpreter where
-  type InternalLc NaiveInterpreter = Lc
-  fromLc _ = id
-  toLc _ = id
-  betaReduceI _ = naiveBetaReduce
-
-
--- | naive 'betaReduce'
-naiveBetaReduce :: Lc -> Lc
-naiveBetaReduce (LcApp (LcAbs p fn) arg) = substitute fn p arg
-naiveBetaReduce mainApp@(LcApp fn arg) =
-  let fn'  = naiveBetaReduce fn
-      arg' = naiveBetaReduce arg
-  in  if fn /= fn' || arg /= arg'  -- ensure both fn and arg have already been reduced
-        then LcApp fn' arg'
-        else mainApp
-naiveBetaReduce lc = lc
-
--- | substitute in the given 'Lc' the LcVars with the given name
--- with the given 'Lc'
-substitute :: Lc -> String -> Lc -> Lc
-substitute v@(LcVar var) param new = if var == param then new else v
-
-substitute lcAbs@(LcAbs newParam fn) oldParam new =
-  if newParam /= oldParam then LcAbs newParam $ substitute fn oldParam new else lcAbs -- oldParam has been shadowed in this case
-
-substitute (LcApp fn arg) param new = LcApp (substitute fn param new) (substitute arg param new)
 

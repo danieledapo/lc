@@ -18,7 +18,8 @@ library
   exposed-modules:      Language.ELc
                       , Language.ELc.Parser
                       , Language.Lc
-                      , Language.Lc.DeBruijn
+                      , Language.Lc.Interpreter.DeBruijn
+                      , Language.Lc.Interpreter.Dynamic
                       , Language.Lc.Parser
   build-depends:        base >= 4.7 && < 5
                       , containers >= 0.5 && < 0.6
@@ -48,7 +49,7 @@ test-suite lc-test
                      , Lc.Arbitrary
                      , Lc.DeBruijnSpec
                      , Lc.Interpreter
-                     , Lc.NaiveSpec
+                     , Lc.DynamicSpec
                      , Lc.ParserSpec
   main-is:             Spec.hs
   build-depends:       base

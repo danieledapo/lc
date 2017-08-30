@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 
 -- | Beta reduce using DeBruijn indexes
-module Language.Lc.DeBruijn
+module Language.Lc.Interpreter.DeBruijn
   ( DeBruijn(..)
   , DeBruijnVar(..)
 
@@ -94,7 +94,7 @@ deBruijnBetaReduce x = x
 
 
 -- | substitute in the given 'DeBruijn' the Var of the given 'Index'
--- with the given 'DeBruijn'
+-- with the given 'DeBruijn'. It respects all the substitution laws.
 substitute
   :: DeBruijn -- ^ the 'DeBruijn' to search into
   -> Integer -- ^ the 'Var's index that we want to replace with
