@@ -11,19 +11,18 @@ import Language.ELc
 import qualified Language.Lc.Parser as P
 
 import Text.Megaparsec
-import Text.Megaparsec.String
 
 
 -- | parse an expression, a 'let_' or 'lc'
-expr :: Parser ELc
+expr :: P.Parser ELc
 expr = try (ELcLet <$> let_) <|> lc
 
 -- | parse a normal 'lc'
-lc :: Parser ELc
+lc :: P.Parser ELc
 lc = ELc <$> P.expr
 
 -- | parse a 'let_' like `a = 42`
-let_ :: Parser Let
+let_ :: P.Parser Let
 let_ = do
   name <- P.iden
   void $ P.symbol "="

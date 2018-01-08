@@ -11,7 +11,6 @@ import qualified Language.Lc.Parser as P
 import System.Console.Haskeline
 
 import Text.Megaparsec
-import Text.Megaparsec.String
 
 import Text.PrettyPrint.HughesPJClass (Pretty(..))
 
@@ -69,7 +68,7 @@ processLine inp = case parse lineOrNothing "<stdin>" inp of
 -- Plumbing
 --------------------------------------------------------------
 
-lineOrNothing :: Parser (Maybe ELc)
+lineOrNothing :: P.Parser (Maybe ELc)
 lineOrNothing = try line <|> nothing
  where
   line    = fmap Just (EP.expr <* P.space)

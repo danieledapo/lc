@@ -1,69 +1,95 @@
-name:                lc
-version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/d-dorazio/lc#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Daniele D'Orazio
-maintainer:          d.dorazio96@gmail.com
-copyright:           MIT
-category:            Language
-build-type:          Simple
-extra-source-files:  README.md
-cabal-version:       >=1.10
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 5bf48a2c3448b49c96a44c0305e9450c6d4a5f7a41f011d5d8211c3d98d053bc
 
-library
-  hs-source-dirs:      src
-  exposed-modules:      Language.ELc
-                      , Language.ELc.Parser
-                      , Language.Lc
-                      , Language.Lc.Interpreter.DeBruijn
-                      , Language.Lc.Interpreter.Dynamic
-                      , Language.Lc.Parser
-  build-depends:        base >= 4.7 && < 5
-                      , containers >= 0.5 && < 0.6
-                      , megaparsec >= 5 && < 6
-                      , mtl >= 2 && < 3
-                      , pretty >= 1.1 && < 2
-  default-language:    Haskell2010
+name:           lc
+version:        0.1.0.0
+synopsis:       Lambda Calculus
+description:    Please see the README on Github at <https://github.com/d-dorazio/lc#readme>
+homepage:       https://github.com/d-dorazio/lc#readme
+bug-reports:    https://github.com/d-dorazio/lc/issues
+author:         d-dorazio
+maintainer:     d.dorazio96@gmail.com
+copyright:      MIT
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
 
-executable lc-exe
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , haskeline >= 0.7 && < 0.8
-                     , lc
-                     , megaparsec >= 5 && < 6
-                     , mtl >= 2 && < 3
-                     , pretty >= 1.1 && < 2
-  default-language:    Haskell2010
-
-test-suite lc-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  other-modules:       ELc.Arbitrary
-                     , ELc.ExecSpec
-                     , ELc.ParserSpec
-                     , Lc.Arbitrary
-                     , Lc.DeBruijnSpec
-                     , Lc.Interpreter
-                     , Lc.DynamicSpec
-                     , Lc.ParserSpec
-  main-is:             Spec.hs
-  build-depends:       base
-                     , containers >= 0.5 && < 0.6
-                     , hspec >= 2.0 && < 3.0
-                     , lc
-                     , megaparsec >= 5 && < 6
-                     , mtl >= 2 && < 3
-                     , pretty >= 1.1 && < 2
-                     , safe >= 0.3 && < 0.4
-                     , QuickCheck >= 2 && < 3
-  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
+  type: git
   location: https://github.com/d-dorazio/lc
+
+library
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -fwarn-tabs
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , haskeline
+    , megaparsec
+    , mtl
+    , pretty
+  exposed-modules:
+      Language.ELc
+      Language.ELc.Parser
+      Language.Lc
+      Language.Lc.Interpreter.DeBruijn
+      Language.Lc.Interpreter.Dynamic
+      Language.Lc.Parser
+  other-modules:
+      Paths_lc
+  default-language: Haskell2010
+
+executable lc
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -fwarn-tabs -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , haskeline
+    , lc
+    , megaparsec
+    , mtl
+    , optparse-applicative
+    , pretty
+  other-modules:
+      Paths_lc
+  default-language: Haskell2010
+
+test-suite lc-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -fwarn-tabs -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , containers
+    , haskeline
+    , hspec
+    , lc
+    , megaparsec
+    , mtl
+    , pretty
+    , safe
+  other-modules:
+      ELc.Arbitrary
+      ELc.ExecSpec
+      ELc.ParserSpec
+      Lc.Arbitrary
+      Lc.DeBruijnSpec
+      Lc.DynamicSpec
+      Lc.Interpreter
+      Lc.ParserSpec
+      Paths_lc
+  default-language: Haskell2010

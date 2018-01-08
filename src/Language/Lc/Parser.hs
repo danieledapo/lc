@@ -2,7 +2,8 @@
 -- additional syntax is planned(like assignement), but not
 -- yet implemented
 module Language.Lc.Parser
-  ( expr
+  ( Parser
+  , expr
   , iden
   , lexeme
   , parens
@@ -12,16 +13,20 @@ module Language.Lc.Parser
 
 import Control.Applicative (empty)
 import Control.Monad (void)
+import Data.Void (Void)
 
-import Text.Megaparsec hiding (space)
-import qualified Text.Megaparsec.Lexer as L
-import Text.Megaparsec.String
+import Text.Megaparsec
+import Text.Megaparsec.Char (char, spaceChar, alphaNumChar)
+import qualified Text.Megaparsec.Char.Lexer as L
 
 import Language.Lc
 
 --------------------------------------------------------------
 -- Plumbing
 --------------------------------------------------------------
+
+-- | Type for any lc parser
+type Parser = Parsec Void String
 
 -- | consume any whitespace-like things(i.e. comments)
 space :: Parser ()
