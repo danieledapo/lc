@@ -15,7 +15,7 @@ module Language.Lc
 
   ) where
 
-import Text.PrettyPrint.HughesPJ
+import Text.PrettyPrint.HughesPJ (text, char, maybeParens, (<+>))
 import Text.PrettyPrint.HughesPJClass (Pretty(..))
 
 

@@ -61,7 +61,7 @@ processLine inp = case parse lineOrNothing "<stdin>" inp of
 
     put execEnv'
     output . show . pPrint $ lc
-  where printErr = output . parseErrorPretty
+  where printErr = output . errorBundlePretty
 
 
 --------------------------------------------------------------
@@ -71,7 +71,7 @@ processLine inp = case parse lineOrNothing "<stdin>" inp of
 lineOrNothing :: P.Parser (Maybe ELc)
 lineOrNothing = try line <|> nothing
  where
-  line    = fmap Just (EP.expr <* P.space)
+  line    = fmap Just (P.space *> EP.expr <* P.space)
   nothing = P.space >> eof >> return Nothing
 
 

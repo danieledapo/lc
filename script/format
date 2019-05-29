@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-
-find src/ -name "*.hs" -exec brittany -i '{}' -o '{}' \;
-find test/ -name "*.hs" -exec brittany -i '{}' -o '{}' \;
-
